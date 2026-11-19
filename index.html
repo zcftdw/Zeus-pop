@@ -4,228 +4,292 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Player Chat Archive</title>
+<title>ZEUS POP</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#f5f3f1;color:#343434;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}
-header{background:#fff;padding:22px 18px;border-bottom:1px solid #eee}
-h1{font-size:22px;margin:0 0 6px}
-.sub{font-size:12px;color:#999}
-main{max-width:760px;margin:auto;padding:16px}
-button{border:0;border-radius:10px;padding:10px 14px;background:#333;color:white;font-size:13px;cursor:pointer}
-button.light{background:#eee;color:#444}
-button.danger{background:#b64c4c}
-input,textarea,select{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;background:white;font-size:14px;margin:5px 0 12px}
-textarea{min-height:75px;resize:vertical}
-.panel{background:white;border-radius:15px;padding:15px;margin-bottom:14px}
-.players{display:flex;gap:10px;overflow-x:auto;padding:5px 0 12px}
-.player{flex:0 0 100px;text-align:center;background:white;border:2px solid transparent;border-radius:13px;padding:12px 7px;cursor:pointer}
-.player.active{border-color:#8b9b8b;background:#f2f6f1}
-.avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;background:#eee}
-.player-name{font-size:13px;margin-top:7px;overflow-wrap:anywhere}
-.toolbar{display:flex;gap:7px;flex-wrap:wrap}
-.toolbar button{flex:1}
-.chat{padding:14px 8px}
-.day{text-align:center;color:#aaa;font-size:12px;margin:20px 0 12px}
-.msg{display:flex;flex-direction:column;margin:12px 0;max-width:85%}
-.msg.me{margin-left:auto;align-items:flex-end}
-.msg.player-msg{align-items:flex-start}
-.bubble{padding:11px 13px;border-radius:15px;background:white;line-height:1.6;overflow-wrap:anywhere;white-space:pre-wrap}
-.me .bubble{background:#dcebdc}
-.msg img{max-width:220px;max-height:280px;border-radius:12px;margin-top:6px;object-fit:contain}
-.meta{font-size:10px;color:#aaa;margin:4px}
-.actions{display:flex;gap:6px;margin-top:5px}
-.actions button{padding:5px 8px;font-size:11px}
-.empty{text-align:center;color:#aaa;padding:40px 10px}
-small{color:#999}
-label{font-size:13px;color:#666}
-.hidden{display:none}
-#modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:15px;z-index:5}
-#modal .panel{width:100%;max-width:480px;max-height:90vh;overflow:auto}
-footer{text-align:center;color:#aaa;font-size:11px;padding:25px}
+body{margin:0;background:#fff;color:#242424;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans KR","Microsoft YaHei",sans-serif}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+.top{height:64px;background:#f3f3f3;display:flex;align-items:center;justify-content:center;position:sticky;top:0;z-index:5}
+.top b{font-size:21px;font-weight:500}
+.top small{display:block;text-align:center;color:#888;font-size:13px;margin-top:2px}
+.wrap{max-width:720px;margin:auto;padding:52px 24px 100px}
+.profile{display:flex;align-items:center;gap:18px;margin-bottom:48px}
+.avatar{width:82px;height:82px;border-radius:50%;background:#e9eee8;display:grid;place-items:center;overflow:hidden;flex-shrink:0;font-size:25px;color:#315a32}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.profile h1{font-size:38px;font-weight:400;margin:0}
+.label{font-size:18px;color:#777;margin:20px 0 12px}
+input,textarea{width:100%;border:1.5px solid #e2e3e0;border-radius:16px;padding:17px 20px;background:#f8f8f7;outline:none;font-size:17px}
+input:focus,textarea:focus{border-color:#426c42}
+.green{width:100%;border:0;background:#28572d;color:white;padding:19px;border-radius:15px;font-size:20px;margin-top:18px}
+.heart-link{text-align:right;margin:30px 5px 70px;color:#777;font-size:19px;cursor:pointer}
+.line{border:0;border-top:1px solid #ddd;margin:0 0 40px}
+.section-title{font-size:29px;font-weight:400;margin:0 0 20px}
+.date-title{font-size:19px;color:#777;margin:30px 0 22px}
+.post{margin-bottom:38px}
+.post-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.mini{width:42px;height:42px;border-radius:50%;background:#e8eee7;overflow:hidden;display:grid;place-items:center;color:#315a32;flex-shrink:0}
+.mini img{width:100%;height:100%;object-fit:cover}
+.post-name{font-size:17px}
+.verified{color:#fff;background:#777;border-radius:50%;font-size:11px;padding:2px 5px}
+.post-time{color:#777;font-size:16px}
+.post-body{margin-left:52px}
+.post-text{font-size:17px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
+.post-image{width:100%;max-width:445px;max-height:620px;object-fit:contain;display:block;border-radius:0 28px 28px 28px;margin-top:8px;background:#f5f5f5}
+.post-actions{display:flex;justify-content:flex-end;gap:18px;margin-top:12px;color:#777;font-size:22px}
+.love{cursor:pointer}
+.love.active{color:#d65c69}
+.empty{text-align:center;color:#aaa;padding:65px 10px}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin:20px 0 28px}
+.toolbar input{flex:1;min-width:130px;padding:12px;font-size:14px}
+.small-btn{border:1px solid #ddd;background:white;border-radius:12px;padding:10px 14px;color:#555}
+.small-btn.active{background:#28572d;color:white;border-color:#28572d}
+.admin{background:#fafafa;border:1px solid #eee;border-radius:18px;padding:20px;margin:28px 0}
+.admin h3{font-weight:500;margin:0 0 15px}
+.admin label{display:block;font-size:14px;color:#777;margin:13px 0 7px}
+.admin input,.admin textarea{font-size:15px;padding:12px;border-radius:10px;background:white}
+.admin textarea{min-height:95px;resize:vertical}
+.admin .green{font-size:16px;padding:13px;margin-top:15px}
+.bottom{position:fixed;bottom:0;left:0;right:0;height:65px;background:#f6f6f6;display:flex;justify-content:center;align-items:center;gap:100px;border-top:1px solid #eee;z-index:5}
+.bottom button{border:0;background:none;font-size:30px;color:#333}
+.hidden{display:none!important}
+footer{text-align:center;color:#aaa;font-size:12px;margin-top:60px}
+@media(max-width:500px){
+.wrap{padding:40px 22px 90px}
+.profile h1{font-size:34px}
+.avatar{width:76px;height:76px}
+.section-title{font-size:26px}
+.post-body{margin-left:48px}
+}
 </style>
 </head>
 <body>
-<header>
-<h1>Player Chat Archive</h1>
-<div class="sub">私人选手聊天记录收藏馆 · Private Archive</div>
-</header>
-<main>
-<section class="panel">
-<div class="toolbar">
-<button onclick="openPlayer()">＋ 添加选手</button>
-<button class="light" onclick="backup()">导出备份</button>
-<button class="light" onclick="document.getElementById('restore').click()">恢复备份</button>
-<input id="restore" class="hidden" type="file" accept=".json" onchange="restore(event)">
+<div class="top">
+  <div><b>ZEUS POP</b><small>CHOI WOO-JE · PERSONAL ARCHIVE</small></div>
 </div>
-</section>
 
-<div class="players" id="players"></div>
+<main class="wrap">
+  <section id="home">
+    <div class="profile">
+      <div class="avatar" id="avatar">ZEUS</div>
+      <h1>ZEUS POP</h1>
+    </div>
 
-<section class="panel" id="profile">
-<div class="empty">请先添加一位选手</div>
-</section>
+    <div class="label">닉네임</div>
+    <input id="nickname" placeholder="输入你的昵称" maxlength="30">
+    <button class="green" onclick="enterPop()">팝 구경하기</button>
+    <div class="heart-link" onclick="showFavorites()">♡ 하트 모아보기</div>
+  </section>
 
-<section class="panel hidden" id="archive">
-<div class="toolbar">
-<button onclick="openMessage()">＋ 添加聊天记录</button>
-<button class="light" onclick="showFavorites()">查看收藏</button>
-<button class="light" onclick="renderMessages()">全部记录</button>
-</div>
-<div style="margin-top:15px">
-<label>按日期筛选</label>
-<div style="display:flex;gap:8px">
-<input type="date" id="fromDate" onchange="renderMessages()">
-<input type="date" id="toDate" onchange="renderMessages()">
-</div>
-<input id="keyword" placeholder="搜索聊天内容..." oninput="renderMessages()">
-</div>
-<div id="messages" class="chat"></div>
-</section>
+  <hr class="line">
+
+  <section id="archive">
+    <h2 class="section-title" id="archiveTitle">1년 전 오늘의 우제</h2>
+    <div class="toolbar">
+      <input id="search" placeholder="搜索聊天记录..." oninput="render()">
+      <input id="fromDate" type="date" onchange="render()" aria-label="开始日期">
+      <input id="toDate" type="date" onchange="render()" aria-label="结束日期">
+      <button class="small-btn" onclick="clearFilters()">重置</button>
+    </div>
+
+    <div id="posts"></div>
+    <div class="bottom">
+      <button onclick="changePage(-1)">‹</button>
+      <button onclick="changePage(1)">›</button>
+    </div>
+  </section>
+
+  <section class="admin" id="editor">
+    <h3>✦ 기록 추가하기 / 添加聊天记录</h3>
+    <label>选手昵称</label>
+    <input id="playerName" value="최우제">
+    <label>日期</label>
+    <input id="postDate" type="date">
+    <label>时间</label>
+    <input id="postTime" type="time" value="17:12">
+    <label>聊天内容</label>
+    <textarea id="postText" placeholder="输入聊天内容..."></textarea>
+    <label>上传图片（可选）</label>
+    <input id="postImage" type="file" accept="image/*">
+    <button class="green" onclick="savePost()">+ 기록 저장하기</button>
+    <button class="small-btn hidden" id="cancelEdit" onclick="resetEditor()">取消编辑</button>
+    <div style="display:flex;gap:10px;margin-top:15px;flex-wrap:wrap">
+      <button class="small-btn" onclick="exportData()">导出备份</button>
+      <button class="small-btn" onclick="document.getElementById('importFile').click()">恢复备份</button>
+      <input id="importFile" type="file" accept=".json,application/json" hidden onchange="importData(event)">
+      <button class="small-btn" onclick="document.getElementById('avatarFile').click()">更换头像</button>
+      <input id="avatarFile" type="file" accept="image/*" hidden onchange="changeAvatar(event)">
+    </div>
+  </section>
+
+  <footer>ZEUS POP · 개인 소장용 아카이브</footer>
 </main>
-<footer>仅供个人收藏 · 数据保存在当前浏览器，请定期导出备份</footer>
-
-<div id="modal">
-<div class="panel">
-<h3 id="modalTitle">添加记录</h3>
-<div id="modalBody"></div>
-<div class="toolbar">
-<button onclick="saveModal()">保存</button>
-<button class="light" onclick="closeModal()">取消</button>
-</div>
-</div>
-</div>
 
 <script>
-const KEY="player_chat_archive_v1";
-let db=JSON.parse(localStorage.getItem(KEY)||'{"players":[],"messages":[]}');
-let current=null,editing=null,favOnly=false;
-const $=id=>document.getElementById(id);
+const KEY="zeus_pop_posts_v1";
+const PROFILE="zeus_pop_profile_v1";
+let posts=JSON.parse(localStorage.getItem(KEY)||"[]");
+let profile=JSON.parse(localStorage.getItem(PROFILE)||"{}");
+let page=0, favoritesOnly=false, editingId=null;
 
-function persist(){localStorage.setItem(KEY,JSON.stringify(db))}
-function esc(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function player(){return db.players.find(p=>p.id===current)}
-
+function persist(){
+  localStorage.setItem(KEY,JSON.stringify(posts));
+  localStorage.setItem(PROFILE,JSON.stringify(profile));
+}
+function enterPop(){
+  const n=document.getElementById("nickname").value.trim();
+  profile.nickname=n;
+  persist();
+  document.getElementById("archive").scrollIntoView({behavior:"smooth"});
+}
+function showFavorites(){
+  favoritesOnly=true;
+  page=0;
+  document.getElementById("archiveTitle").textContent="♡ 하트 모아보기";
+  render();
+  document.getElementById("archive").scrollIntoView({behavior:"smooth"});
+}
+function clearFilters(){
+  favoritesOnly=false;page=0;
+  document.getElementById("search").value="";
+  document.getElementById("fromDate").value="";
+  document.getElementById("toDate").value="";
+  document.getElementById("archiveTitle").textContent="1년 전 오늘의 우제";
+  render();
+}
+function changePage(n){
+  const total=Math.ceil(filtered().length/10);
+  page=Math.max(0,Math.min(Math.max(0,total-1),page+n));
+  render();
+}
+function filtered(){
+  const q=document.getElementById("search").value.trim().toLowerCase();
+  const from=document.getElementById("fromDate").value;
+  const to=document.getElementById("toDate").value;
+  return posts.filter(p=>{
+    if(favoritesOnly&&!p.favorite)return false;
+    if(q&&!((p.text||"").toLowerCase().includes(q)||(p.name||"").toLowerCase().includes(q)))return false;
+    if(from&&p.date<from)return false;
+    if(to&&p.date>to)return false;
+    return true;
+  }).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+}
 function render(){
-$("players").innerHTML=db.players.map(p=>`
-<div class="player ${p.id===current?'active':''}" onclick="selectPlayer('${p.id}')">
-< img class="avatar" src="${p.avatar||''}" onerror="this.style.visibility='hidden'">
-<div class="player-name">${esc(p.name)}</div>
-</div>`).join("");
-
-let p=player();
-$("profile").innerHTML=p?`
-<div style="display:flex;gap:14px;align-items:center">
-< img class="avatar" style="width:72px;height:72px" src="${p.avatar||''}">
-<div><h2 style="margin:0 0 5px">${esc(p.name)}</h2><small>${esc(p.description)}</small></div>
-</div>
-<div class="toolbar" style="margin-top:14px">
-<button class="light" onclick="openPlayer('${p.id}')">编辑资料</button>
-<button class="danger" onclick="deletePlayer('${p.id}')">删除选手</button>
-</div>`:'<div class="empty">请先添加一位选手</div>';
-
-$("archive").classList.toggle("hidden",!p);
-if(p)renderMessages();
+  const list=filtered();
+  const shown=list.slice(page*10,page*10+10);
+  const root=document.getElementById("posts");
+  if(!shown.length){
+    root.innerHTML='<div class="empty">아직 기록이 없어요 ♡<br><small>在下方添加第一条聊天记录吧</small></div>';
+    return;
+  }
+  let html="",last="";
+  shown.forEach(p=>{
+    if(last!==p.date){
+      const d=new Date(p.date+"T12:00:00");
+      const dateText=p.date.replaceAll("-",".")+" "+["日","一","二","三","四","五","六"][d.getDay()];
+      html+='<div class="date-title">'+dateText+'</div>';
+      last=p.date;
+    }
+    const image=p.image?'< img class="post-image" src="'+p.image+'" alt="聊天图片">':"";
+    html+='<article class="post"><div class="post-head"><div class="mini">'+(profile.avatar?'< img src="'+profile.avatar+'">':'Z')+'</div><span class="post-name">'+esc(p.name||"최우제")+'</span><span class="verified">✓</span><span class="post-time">'+esc(p.time||"")+'</span></div><div class="post-body">'+(p.text?'<div class="post-text">'+esc(p.text)+'</div>':"")+image+'</div><div class="post-actions"><span class="love '+(p.favorite?"active":"")+'" onclick="toggleLove('+p.id+')">'+(p.favorite?"♥":"♡")+'</span><button class="small-btn" onclick="editPost('+p.id+')">编辑</button><button class="small-btn" onclick="deletePost('+p.id+')">删除</button></div></article>';
+  });
+  root.innerHTML=html;
 }
-
-function selectPlayer(id){current=id;favOnly=false;render()}
-function openModal(title,html){$("modalTitle").textContent=title;$("modalBody").innerHTML=html;$("modal").style.display="flex"}
-function closeModal(){$("modal").style.display="none";editing=null}
-
-function openPlayer(id){
-editing=id||null;
-let p=db.players.find(x=>x.id===id)||{};
-openModal(id?"编辑选手":"添加选手",`
-<label>选手昵称</label><input id="fName" value="${esc(p.name)}" placeholder="例如：Doran">
-<label>头像图片</label><input id="fAvatar" type="file" accept="image/*">
-<label>个人介绍</label><textarea id="fDesc">${esc(p.description)}</textarea>`);
+function esc(s){
+  return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
-
-function saveModal(){
-let name=$("fName");
-if(name){
-let p=db.players.find(x=>x.id===editing);
-let file=$("fAvatar").files[0];
-let finish=avatar=>{
-if(p){p.name=name.value.trim()||p.name;p.description=$("fDesc").value;if(avatar)p.avatar=avatar}
-else{let id=crypto.randomUUID();db.players.push({id,name:name.value.trim()||"未命名选手",description:$("fDesc").value,avatar:avatar||""});current=id}
-persist();closeModal();render();
-};
-if(file){let r=new FileReader();r.onload=()=>finish(r.result);r.readAsDataURL(file)}
-else finish(null);
-return;
+async function compress(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=()=>{
+      const img=new Image();
+      img.onload=()=>{
+        const scale=Math.min(1,1400/img.width);
+        const c=document.createElement("canvas");
+        c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);
+        c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+        resolve(c.toDataURL("image/jpeg",.78));
+      };
+      img.onerror=reject;img.src=reader.result;
+    };
+    reader.onerror=reject;reader.readAsDataURL(file);
+  });
 }
-
-let content=$("mContent").value.trim(),file=$("mImage").files[0];
-let date=$("mDate").value,time=$("mTime").value,side=$("mSide").value;
-if(!content&&!file){alert("请输入文字或选择图片");return}
-let finish=image=>{
-let old=db.messages.find(x=>x.id===editing);
-let item=old||{id:crypto.randomUUID(),saved:false};
-Object.assign(item,{playerId:current,content,date,time,side,image:image||old?.image||""});
-if(!old)db.messages.push(item);
-persist();closeModal();renderMessages();
-};
-if(file){let r=new FileReader();r.onload=()=>finish(r.result);r.readAsDataURL(file)}
-else finish(null);
+async function savePost(){
+  const date=document.getElementById("postDate").value;
+  const time=document.getElementById("postTime").value;
+  const text=document.getElementById("postText").value.trim();
+  const name=document.getElementById("playerName").value.trim()||"최우제";
+  const file=document.getElementById("postImage").files[0];
+  if(!date){alert("请先选择日期");return}
+  if(!text&&!file){alert("请填写内容或上传图片");return}
+  try{
+    let image=file?await compress(file):"";
+    if(editingId!==null){
+      const p=posts.find(x=>x.id===editingId);
+      if(p){p.date=date;p.time=time;p.text=text;p.name=name;if(file)p.image=image}
+    }else{
+      posts.push({id:Date.now(),date,time,text,name,image,favorite:false});
+    }
+    persist();resetEditor();page=0;render();
+    alert("保存成功！");
+  }catch(e){alert("图片处理失败，请换一张图片再试。")}
 }
-
-function openMessage(id){
-editing=id||null;
-let m=db.messages.find(x=>x.id===id)||{};
-let now=new Date(),today=now.toISOString().slice(0,10);
-openModal(id?"编辑聊天记录":"添加聊天记录",`
-<label>聊天视角</label>
-<select id="mSide"><option value="player" ${m.side!=="me"?"selected":""}>选手发送</option><option value="me" ${m.side==="me"?"selected":""}>我发送</option></select>
-<label>日期</label><input id="mDate" type="date" value="${m.date||today}">
-<label>时间</label><input id="mTime" type="time" value="${m.time||"12:00"}">
-<label>聊天文字</label><textarea id="mContent" placeholder="输入聊天内容...">${esc(m.content)}</textarea>
-<label>聊天图片</label><input id="mImage" type="file" accept="image/*">
-${m.image?'<small>已保存图片；不重新选择则保留原图</small>':''}`);
+function resetEditor(){
+  editingId=null;
+  ["postText","postImage"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("postDate").value=new Date().toISOString().slice(0,10);
+  document.getElementById("postTime").value="17:12";
+  document.getElementById("cancelEdit").classList.add("hidden");
 }
-
-function renderMessages(){
-let p=player();if(!p)return;
-let from=$("fromDate").value,to=$("toDate").value,k=$("keyword").value.toLowerCase();
-let list=db.messages.filter(m=>m.playerId===current&&(!from||m.date>=from)&&(!to||m.date<=to)&&(!favOnly||m.saved)&&(!k||(m.content||"").toLowerCase().includes(k)));
-list.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
-$("messages").innerHTML=list.length?list.map(m=>`
-<div class="day">${esc(m.date)} ${esc(m.time)}</div>
-<div class="msg ${m.side==='me'?'me':'player-msg'}">
-<div class="meta">${m.side==='me'?'我':'选手'} ${m.saved?' · ★ 已收藏':''}</div>
-<div class="bubble">${esc(m.content)}</div>
-${m.image?`< img src="${m.image}" onclick="window.open(this.src)">`:''}
-<div class="actions">
-<button class="light" onclick="toggleSave('${m.id}')">${m.saved?'取消收藏':'收藏'}</button>
-<button class="light" onclick="openMessage('${m.id}')">编辑</button>
-<button class="danger" onclick="deleteMessage('${m.id}')">删除</button>
-</div></div>`).join(""):'<div class="empty">这里还没有聊天记录<br>点击上方“添加聊天记录”开始收藏</div>';
+function editPost(id){
+  const p=posts.find(x=>x.id===id);if(!p)return;
+  editingId=id;
+  document.getElementById("playerName").value=p.name;
+  document.getElementById("postDate").value=p.date;
+  document.getElementById("postTime").value=p.time;
+  document.getElementById("postText").value=p.text;
+  document.getElementById("cancelEdit").classList.remove("hidden");
+  document.getElementById("editor").scrollIntoView({behavior:"smooth"});
 }
-
-function toggleSave(id){let m=db.messages.find(x=>x.id===id);m.saved=!m.saved;persist();renderMessages()}
-function deleteMessage(id){if(confirm("确定删除这条聊天记录吗？")){db.messages=db.messages.filter(x=>x.id!==id);persist();renderMessages()}}
-function deletePlayer(id){if(!confirm("删除选手会同时删除该选手的全部聊天记录，确定吗？"))return;db.players=db.players.filter(p=>p.id!==id);db.messages=db.messages.filter(m=>m.playerId!==id);current=null;persist();render()}
-function showFavorites(){favOnly=true;renderMessages()}
-
-function backup(){
-let blob=new Blob([JSON.stringify(db)],{type:"application/json"});
-let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="player-chat-backup.json";a.click();URL.revokeObjectURL(a.href);
+function deletePost(id){
+  if(!confirm("确定删除这条记录吗？"))return;
+  posts=posts.filter(p=>p.id!==id);persist();render();
 }
-
-function restore(e){
-let f=e.target.files[0];if(!f)return;
-let r=new FileReader();r.onload=()=>{
-try{
-let data=JSON.parse(r.result);
-if(!Array.isArray(data.players)||!Array.isArray(data.messages))throw 0;
-if(confirm("恢复备份会覆盖当前网页中的记录，确定继续吗？")){
-db=data;current=db.players[0]?.id||null;persist();render();alert("恢复成功")
+function toggleLove(id){
+  const p=posts.find(x=>x.id===id);if(!p)return;
+  p.favorite=!p.favorite;persist();render();
 }
-}catch(err){alert("备份文件格式不正确")}
-};
-r.readAsText(f);e.target.value="";
+async function changeAvatar(e){
+  const f=e.target.files[0];if(!f)return;
+  try{
+    profile.avatar=await compress(f);persist();render();
+    document.getElementById("avatar").innerHTML='< img src="'+profile.avatar+'">';
+  }catch(err){alert("头像上传失败")}
 }
-
+function exportData(){
+  const data={posts,profile};
+  const blob=new Blob([JSON.stringify(data)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download="zeus-pop-backup.json";a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importData(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const data=JSON.parse(r.result);
+      if(!Array.isArray(data.posts))throw Error();
+      if(!confirm("恢复备份会替换当前记录，确定继续吗？"))return;
+      posts=data.posts;profile=data.profile||{};persist();render();alert("恢复成功");
+    }catch(err){alert("备份文件格式不正确")}
+  };
+  r.readAsText(f);e.target.value="";
+}
+if(profile.nickname)document.getElementById("nickname").value=profile.nickname;
+if(profile.avatar)document.getElementById("avatar").innerHTML='< img src="'+profile.avatar+'">';
+document.getElementById("postDate").value=new Date().toISOString().slice(0,10);
 render();
 </script>
 </body>
