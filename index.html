@@ -1,0 +1,232 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Player Chat Archive</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f3f1;color:#343434;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif}
+header{background:#fff;padding:22px 18px;border-bottom:1px solid #eee}
+h1{font-size:22px;margin:0 0 6px}
+.sub{font-size:12px;color:#999}
+main{max-width:760px;margin:auto;padding:16px}
+button{border:0;border-radius:10px;padding:10px 14px;background:#333;color:white;font-size:13px;cursor:pointer}
+button.light{background:#eee;color:#444}
+button.danger{background:#b64c4c}
+input,textarea,select{width:100%;padding:11px;border:1px solid #ddd;border-radius:9px;background:white;font-size:14px;margin:5px 0 12px}
+textarea{min-height:75px;resize:vertical}
+.panel{background:white;border-radius:15px;padding:15px;margin-bottom:14px}
+.players{display:flex;gap:10px;overflow-x:auto;padding:5px 0 12px}
+.player{flex:0 0 100px;text-align:center;background:white;border:2px solid transparent;border-radius:13px;padding:12px 7px;cursor:pointer}
+.player.active{border-color:#8b9b8b;background:#f2f6f1}
+.avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;background:#eee}
+.player-name{font-size:13px;margin-top:7px;overflow-wrap:anywhere}
+.toolbar{display:flex;gap:7px;flex-wrap:wrap}
+.toolbar button{flex:1}
+.chat{padding:14px 8px}
+.day{text-align:center;color:#aaa;font-size:12px;margin:20px 0 12px}
+.msg{display:flex;flex-direction:column;margin:12px 0;max-width:85%}
+.msg.me{margin-left:auto;align-items:flex-end}
+.msg.player-msg{align-items:flex-start}
+.bubble{padding:11px 13px;border-radius:15px;background:white;line-height:1.6;overflow-wrap:anywhere;white-space:pre-wrap}
+.me .bubble{background:#dcebdc}
+.msg img{max-width:220px;max-height:280px;border-radius:12px;margin-top:6px;object-fit:contain}
+.meta{font-size:10px;color:#aaa;margin:4px}
+.actions{display:flex;gap:6px;margin-top:5px}
+.actions button{padding:5px 8px;font-size:11px}
+.empty{text-align:center;color:#aaa;padding:40px 10px}
+small{color:#999}
+label{font-size:13px;color:#666}
+.hidden{display:none}
+#modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;padding:15px;z-index:5}
+#modal .panel{width:100%;max-width:480px;max-height:90vh;overflow:auto}
+footer{text-align:center;color:#aaa;font-size:11px;padding:25px}
+</style>
+</head>
+<body>
+<header>
+<h1>Player Chat Archive</h1>
+<div class="sub">私人选手聊天记录收藏馆 · Private Archive</div>
+</header>
+<main>
+<section class="panel">
+<div class="toolbar">
+<button onclick="openPlayer()">＋ 添加选手</button>
+<button class="light" onclick="backup()">导出备份</button>
+<button class="light" onclick="document.getElementById('restore').click()">恢复备份</button>
+<input id="restore" class="hidden" type="file" accept=".json" onchange="restore(event)">
+</div>
+</section>
+
+<div class="players" id="players"></div>
+
+<section class="panel" id="profile">
+<div class="empty">请先添加一位选手</div>
+</section>
+
+<section class="panel hidden" id="archive">
+<div class="toolbar">
+<button onclick="openMessage()">＋ 添加聊天记录</button>
+<button class="light" onclick="showFavorites()">查看收藏</button>
+<button class="light" onclick="renderMessages()">全部记录</button>
+</div>
+<div style="margin-top:15px">
+<label>按日期筛选</label>
+<div style="display:flex;gap:8px">
+<input type="date" id="fromDate" onchange="renderMessages()">
+<input type="date" id="toDate" onchange="renderMessages()">
+</div>
+<input id="keyword" placeholder="搜索聊天内容..." oninput="renderMessages()">
+</div>
+<div id="messages" class="chat"></div>
+</section>
+</main>
+<footer>仅供个人收藏 · 数据保存在当前浏览器，请定期导出备份</footer>
+
+<div id="modal">
+<div class="panel">
+<h3 id="modalTitle">添加记录</h3>
+<div id="modalBody"></div>
+<div class="toolbar">
+<button onclick="saveModal()">保存</button>
+<button class="light" onclick="closeModal()">取消</button>
+</div>
+</div>
+</div>
+
+<script>
+const KEY="player_chat_archive_v1";
+let db=JSON.parse(localStorage.getItem(KEY)||'{"players":[],"messages":[]}');
+let current=null,editing=null,favOnly=false;
+const $=id=>document.getElementById(id);
+
+function persist(){localStorage.setItem(KEY,JSON.stringify(db))}
+function esc(s){return String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function player(){return db.players.find(p=>p.id===current)}
+
+function render(){
+$("players").innerHTML=db.players.map(p=>`
+<div class="player ${p.id===current?'active':''}" onclick="selectPlayer('${p.id}')">
+< img class="avatar" src="${p.avatar||''}" onerror="this.style.visibility='hidden'">
+<div class="player-name">${esc(p.name)}</div>
+</div>`).join("");
+
+let p=player();
+$("profile").innerHTML=p?`
+<div style="display:flex;gap:14px;align-items:center">
+< img class="avatar" style="width:72px;height:72px" src="${p.avatar||''}">
+<div><h2 style="margin:0 0 5px">${esc(p.name)}</h2><small>${esc(p.description)}</small></div>
+</div>
+<div class="toolbar" style="margin-top:14px">
+<button class="light" onclick="openPlayer('${p.id}')">编辑资料</button>
+<button class="danger" onclick="deletePlayer('${p.id}')">删除选手</button>
+</div>`:'<div class="empty">请先添加一位选手</div>';
+
+$("archive").classList.toggle("hidden",!p);
+if(p)renderMessages();
+}
+
+function selectPlayer(id){current=id;favOnly=false;render()}
+function openModal(title,html){$("modalTitle").textContent=title;$("modalBody").innerHTML=html;$("modal").style.display="flex"}
+function closeModal(){$("modal").style.display="none";editing=null}
+
+function openPlayer(id){
+editing=id||null;
+let p=db.players.find(x=>x.id===id)||{};
+openModal(id?"编辑选手":"添加选手",`
+<label>选手昵称</label><input id="fName" value="${esc(p.name)}" placeholder="例如：Doran">
+<label>头像图片</label><input id="fAvatar" type="file" accept="image/*">
+<label>个人介绍</label><textarea id="fDesc">${esc(p.description)}</textarea>`);
+}
+
+function saveModal(){
+let name=$("fName");
+if(name){
+let p=db.players.find(x=>x.id===editing);
+let file=$("fAvatar").files[0];
+let finish=avatar=>{
+if(p){p.name=name.value.trim()||p.name;p.description=$("fDesc").value;if(avatar)p.avatar=avatar}
+else{let id=crypto.randomUUID();db.players.push({id,name:name.value.trim()||"未命名选手",description:$("fDesc").value,avatar:avatar||""});current=id}
+persist();closeModal();render();
+};
+if(file){let r=new FileReader();r.onload=()=>finish(r.result);r.readAsDataURL(file)}
+else finish(null);
+return;
+}
+
+let content=$("mContent").value.trim(),file=$("mImage").files[0];
+let date=$("mDate").value,time=$("mTime").value,side=$("mSide").value;
+if(!content&&!file){alert("请输入文字或选择图片");return}
+let finish=image=>{
+let old=db.messages.find(x=>x.id===editing);
+let item=old||{id:crypto.randomUUID(),saved:false};
+Object.assign(item,{playerId:current,content,date,time,side,image:image||old?.image||""});
+if(!old)db.messages.push(item);
+persist();closeModal();renderMessages();
+};
+if(file){let r=new FileReader();r.onload=()=>finish(r.result);r.readAsDataURL(file)}
+else finish(null);
+}
+
+function openMessage(id){
+editing=id||null;
+let m=db.messages.find(x=>x.id===id)||{};
+let now=new Date(),today=now.toISOString().slice(0,10);
+openModal(id?"编辑聊天记录":"添加聊天记录",`
+<label>聊天视角</label>
+<select id="mSide"><option value="player" ${m.side!=="me"?"selected":""}>选手发送</option><option value="me" ${m.side==="me"?"selected":""}>我发送</option></select>
+<label>日期</label><input id="mDate" type="date" value="${m.date||today}">
+<label>时间</label><input id="mTime" type="time" value="${m.time||"12:00"}">
+<label>聊天文字</label><textarea id="mContent" placeholder="输入聊天内容...">${esc(m.content)}</textarea>
+<label>聊天图片</label><input id="mImage" type="file" accept="image/*">
+${m.image?'<small>已保存图片；不重新选择则保留原图</small>':''}`);
+}
+
+function renderMessages(){
+let p=player();if(!p)return;
+let from=$("fromDate").value,to=$("toDate").value,k=$("keyword").value.toLowerCase();
+let list=db.messages.filter(m=>m.playerId===current&&(!from||m.date>=from)&&(!to||m.date<=to)&&(!favOnly||m.saved)&&(!k||(m.content||"").toLowerCase().includes(k)));
+list.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+$("messages").innerHTML=list.length?list.map(m=>`
+<div class="day">${esc(m.date)} ${esc(m.time)}</div>
+<div class="msg ${m.side==='me'?'me':'player-msg'}">
+<div class="meta">${m.side==='me'?'我':'选手'} ${m.saved?' · ★ 已收藏':''}</div>
+<div class="bubble">${esc(m.content)}</div>
+${m.image?`< img src="${m.image}" onclick="window.open(this.src)">`:''}
+<div class="actions">
+<button class="light" onclick="toggleSave('${m.id}')">${m.saved?'取消收藏':'收藏'}</button>
+<button class="light" onclick="openMessage('${m.id}')">编辑</button>
+<button class="danger" onclick="deleteMessage('${m.id}')">删除</button>
+</div></div>`).join(""):'<div class="empty">这里还没有聊天记录<br>点击上方“添加聊天记录”开始收藏</div>';
+}
+
+function toggleSave(id){let m=db.messages.find(x=>x.id===id);m.saved=!m.saved;persist();renderMessages()}
+function deleteMessage(id){if(confirm("确定删除这条聊天记录吗？")){db.messages=db.messages.filter(x=>x.id!==id);persist();renderMessages()}}
+function deletePlayer(id){if(!confirm("删除选手会同时删除该选手的全部聊天记录，确定吗？"))return;db.players=db.players.filter(p=>p.id!==id);db.messages=db.messages.filter(m=>m.playerId!==id);current=null;persist();render()}
+function showFavorites(){favOnly=true;renderMessages()}
+
+function backup(){
+let blob=new Blob([JSON.stringify(db)],{type:"application/json"});
+let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="player-chat-backup.json";a.click();URL.revokeObjectURL(a.href);
+}
+
+function restore(e){
+let f=e.target.files[0];if(!f)return;
+let r=new FileReader();r.onload=()=>{
+try{
+let data=JSON.parse(r.result);
+if(!Array.isArray(data.players)||!Array.isArray(data.messages))throw 0;
+if(confirm("恢复备份会覆盖当前网页中的记录，确定继续吗？")){
+db=data;current=db.players[0]?.id||null;persist();render();alert("恢复成功")
+}
+}catch(err){alert("备份文件格式不正确")}
+};
+r.readAsText(f);e.target.value="";
+}
+
+render();
+</script>
+</body>
+</html>
